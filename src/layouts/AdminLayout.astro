@@ -1,0 +1,53 @@
+---
+import BaseHead from './BaseHead.astro';
+import Sidebar from '@/components/admin/Sidebar.tsx';
+import Topbar from '@/components/admin/Topbar.astro';
+import { Toaster } from '@/components/ui/Toaster.tsx';
+import { requireUser } from '@/lib/auth/session';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { titleForPath } from '@/lib/nav';
+import type { Role } from '@/server/auth/permissions';
+
+interface Props {
+  title?: string;
+}
+
+const user = await requireUser(Astro);
+const path = Astro.url.pathname;
+const title = Astro.props.title ?? titleForPath(path);
+
+let portals: Awaited<ReturnType<typeof listPortals>> = [];
+try {
+  portals = await listPortals();
+} catch {
+  // La base de datos aún no está disponible: el panel se muestra sin selector.
+}
+const currentPortal = getSelectedPortalSlug(Astro);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <BaseHead title={title} />
+  </head>
+  <body class="min-h-screen bg-[var(--surface-muted)]">
+    <div class="flex min-h-screen">
+      <Sidebar client:load currentPath={path} role={user.role as Role} />
+      <div class="flex min-w-0 flex-1 flex-col">
+        <Topbar
+          title={title}
+          portals={portals}
+          currentPortal={currentPortal}
+          user={{ name: user.name, email: user.email, role: user.role }}
+        />
+        <main class="flex-1 p-4 lg:p-6">
+          <div class="mx-auto max-w-[1400px]">
+            <slot />
+          </div>
+        </main>
+      </div>
+    </div>
+    <Toaster client:idle />
+  </body>
+</html>

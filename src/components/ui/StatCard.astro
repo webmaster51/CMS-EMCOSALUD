@@ -1,0 +1,31 @@
+---
+interface Props {
+  label: string;
+  value: number | string;
+  href?: string;
+  hint?: string;
+  accent?: 'brand' | 'accent';
+}
+const { label, value, href, hint, accent = 'brand' } = Astro.props;
+const Tag = href ? 'a' : 'div';
+const fmt = typeof value === 'number' ? value.toLocaleString('es-CO') : value;
+---
+
+<Tag
+  href={href}
+  class:list={[
+    'card block px-5 py-4 transition-colors',
+    href && 'hover:border-brand-200 hover:bg-brand-50/40',
+  ]}
+>
+  <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+  <p
+    class:list={[
+      'mt-1 text-2xl font-bold tabular-nums',
+      accent === 'brand' ? 'text-brand-700' : 'text-accent-700',
+    ]}
+  >
+    {fmt}
+  </p>
+  {hint && <p class="mt-0.5 text-xs text-slate-400">{hint}</p>}
+</Tag>

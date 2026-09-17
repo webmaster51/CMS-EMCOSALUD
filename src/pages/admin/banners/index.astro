@@ -1,0 +1,37 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import BannersTable from '@/components/banners/BannersTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listBannersPaged } from '@/server/repositories/bannerRepository';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { bannerListSchema } from '@/lib/validations/banner';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { BannerDTO } from '@/lib/dto/banner';
+
+export const prerender = false;
+await requireResource(Astro, 'banners');
+
+const portalsAll = await listPortals();
+const selectedSlug = getSelectedPortalSlug(Astro);
+const selectedPortal = selectedSlug
+  ? portalsAll.find((p) => p.slug === selectedSlug)
+  : undefined;
+
+const params = bannerListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(selectedPortal ? { portalId: selectedPortal.id } : {}),
+});
+const initial: PagedDTO<BannerDTO> = await listBannersPaged(params);
+const portalOptions = portalsAll.map((p) => ({ id: p.id, name: p.name }));
+---
+
+<AdminLayout title="Banners">
+  <p class="mb-4 text-sm text-slate-500">
+    Los <strong>banners hero / slider</strong> son la franja de imágenes de la parte superior de la
+    <strong>página de inicio</strong> del portal. El sitio los rota como carrusel según el
+    <strong>orden</strong> (el visitante solo navega entre imágenes, no las cierra). Los banners
+    <strong>programados</strong> se activan y finalizan solos según sus fechas.
+  </p>
+  <BannersTable client:load initial={initial} portals={portalOptions} />
+</AdminLayout>

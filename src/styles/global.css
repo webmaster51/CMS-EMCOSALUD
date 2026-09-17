@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/* ────────────────────────────────────────────────────────────
+ * Design System — CMS EMCO SALUD
+ * Tokens derivados del logo "EMCO SALUD — Grupo Empresarial":
+ *   azul institucional (EMCO) + verde salud (SALUD).
+ * Ver plan §1.
+ * ──────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans:
+    'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', var(--font-sans);
+
+  /* Azul institucional (primary) */
+  --color-brand-50: #eef2fa;
+  --color-brand-100: #d6e0f2;
+  --color-brand-200: #adbfe3;
+  --color-brand-300: #7d97cf;
+  --color-brand-400: #4d6db6;
+  --color-brand-500: #2c4d97;
+  --color-brand-600: #1d3c7a;
+  --color-brand-700: #172f60;
+  --color-brand-800: #132749;
+  --color-brand-900: #101f3a;
+  --color-brand-950: #0a1424;
+
+  /* Verde salud (accent) */
+  --color-accent-50: #f0f9e8;
+  --color-accent-100: #dcf0c8;
+  --color-accent-200: #bde294;
+  --color-accent-300: #97d05c;
+  --color-accent-400: #74bd35;
+  --color-accent-500: #5cb030;
+  --color-accent-600: #468a22;
+  --color-accent-700: #386e1e;
+  --color-accent-800: #2f5a1c;
+  --color-accent-900: #29491b;
+
+  /* Semánticos */
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fee2e2;
+  --color-info: #2563eb;
+  --color-info-bg: #dbeafe;
+
+  --radius-card: 0.875rem;
+  --radius-modal: 1.25rem;
+}
+
+/* Superficie base de la aplicación */
+:root {
+  color-scheme: light;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --text-strong: #0f172a;
+  --text-muted: #475569;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--surface-muted);
+  color: var(--text-strong);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+/* Utilidad de tarjeta compartida (idiom de los sitios) */
+@utility card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+}
+
+/* Estilos del contenido rich text del blog (editor y render) */
+.prose-emco {
+  line-height: 1.65;
+  color: var(--text-strong);
+}
+.prose-emco h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.2em 0 0.4em;
+}
+.prose-emco h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1em 0 0.3em;
+}
+.prose-emco p {
+  margin: 0.6em 0;
+}
+.prose-emco ul,
+.prose-emco ol {
+  margin: 0.6em 0;
+  padding-left: 1.4em;
+}
+.prose-emco ul {
+  list-style: disc;
+}
+.prose-emco ol {
+  list-style: decimal;
+}
+.prose-emco blockquote {
+  border-left: 3px solid var(--color-brand-300);
+  padding-left: 0.9em;
+  color: var(--text-muted);
+  margin: 0.8em 0;
+}
+.prose-emco a {
+  color: var(--color-brand-600);
+  text-decoration: underline;
+}
+.prose-emco code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+.prose-emco :is(h2, h3):first-child {
+  margin-top: 0;
+}

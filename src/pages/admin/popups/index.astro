@@ -1,0 +1,36 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import PopupsTable from '@/components/popups/PopupsTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listPopupsPaged } from '@/server/repositories/popupRepository';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { popupListSchema } from '@/lib/validations/popup';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { PopupDTO } from '@/lib/dto/popup';
+
+export const prerender = false;
+await requireResource(Astro, 'popups');
+
+const portalsAll = await listPortals();
+const selectedSlug = getSelectedPortalSlug(Astro);
+const selectedPortal = selectedSlug
+  ? portalsAll.find((p) => p.slug === selectedSlug)
+  : undefined;
+
+const params = popupListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(selectedPortal ? { portalId: selectedPortal.id } : {}),
+});
+const initial: PagedDTO<PopupDTO> = await listPopupsPaged(params);
+const portalOptions = portalsAll.map((p) => ({ id: p.id, name: p.name }));
+---
+
+<AdminLayout title="Popups">
+  <p class="mb-4 text-sm text-slate-500">
+    Un mismo popup se muestra en varios portales (<strong>General</strong> / <strong>Todos</strong>)
+    y en todas o solo ciertas páginas, sin duplicarlo. Los popups <strong>programados</strong> se
+    activan y finalizan solos según sus fechas.
+  </p>
+  <PopupsTable client:load initial={initial} portals={portalOptions} />
+</AdminLayout>

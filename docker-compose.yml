@@ -1,0 +1,69 @@
+# Entorno local / referencia de producción — CMS EMCO SALUD.
+# En producción, coloca Nginx + TLS por delante del servicio `app`.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cms
+      POSTGRES_PASSWORD: cms
+      POSTGRES_DB: cms
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./.data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cms']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./.data/minio:/data
+
+  # Crea el bucket al arrancar.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 2; done;
+      mc mb -p local/cms-media || true;
+      mc anonymous set download local/cms-media || true;
+      "
+
+  # Servidor de correo de desarrollo (UI en http://localhost:8025).
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://cms:cms@postgres:5432/cms
+      STORAGE_ENDPOINT: http://minio:9000
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    ports:
+      - '4321:4321'
+    # Aplica migraciones y arranca.
+    command: sh -c "node scripts/migrate.mjs && node ./dist/server/entry.mjs"

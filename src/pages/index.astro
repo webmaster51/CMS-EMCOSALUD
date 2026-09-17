@@ -1,0 +1,6 @@
+---
+// Raíz: redirige según haya sesión o no.
+export const prerender = false;
+if (Astro.locals.user) return Astro.redirect('/admin');
+return Astro.redirect('/login');
+---

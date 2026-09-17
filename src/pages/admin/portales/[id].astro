@@ -1,0 +1,91 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import Card from '@/components/ui/Card.astro';
+import { Badge } from '@/components/ui/Badge.tsx';
+import ApiKeysPanel from '@/components/portales/ApiKeysPanel.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { getPortalWithLogo, listApiKeys } from '@/server/repositories/portalRepository';
+import type { ApiKeyDTO } from '@/lib/dto/portal';
+
+export const prerender = false;
+await requireResource(Astro, 'portales');
+
+const id = Number(Astro.params.id);
+const portal = Number.isInteger(id) ? await getPortalWithLogo(id) : undefined;
+if (!portal) return Astro.redirect('/admin/portales');
+
+const keys = await listApiKeys(portal.id);
+const keysDto: ApiKeyDTO[] = keys.map((k) => ({
+  id: k.id,
+  name: k.name,
+  keyPrefix: k.keyPrefix,
+  lastUsedAt: k.lastUsedAt ? k.lastUsedAt.toISOString() : null,
+  revokedAt: k.revokedAt ? k.revokedAt.toISOString() : null,
+  createdAt: k.createdAt.toISOString(),
+}));
+---
+
+<AdminLayout title={`Portal · ${portal.name}`}>
+  <div class="mb-4">
+    <a href="/admin/portales" class="text-sm text-brand-600 hover:underline">
+      ← Portales
+    </a>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <Card title="Datos del portal" class="lg:col-span-1">
+      {portal.logoUrl && (
+        <img
+          src={portal.logoUrl}
+          alt={`Logo de ${portal.name}`}
+          class="mb-3 h-16 w-16 rounded-lg border border-slate-200 object-cover"
+        />
+      )}
+      <dl class="space-y-2.5 text-sm">
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-400">Nombre</dt>
+          <dd class="text-slate-700">{portal.name}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-400">Slug</dt>
+          <dd><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{portal.slug}</code></dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-400">URL</dt>
+          <dd>
+            <a href={portal.url} target="_blank" rel="noreferrer" class="text-brand-600 hover:underline">
+              {portal.url}
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-400">Estado</dt>
+          <dd>
+            <Badge tone={portal.status === 'active' ? 'success' : 'neutral'}>
+              {portal.status === 'active' ? 'Activo' : 'Inactivo'}
+            </Badge>
+          </dd>
+        </div>
+        {
+          portal.description && (
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-slate-400">Descripción</dt>
+              <dd class="text-slate-600">{portal.description}</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-400">Deploy hook</dt>
+          <dd class="break-all text-slate-600">{portal.deployHookUrl ?? '— (sin configurar)'}</dd>
+        </div>
+      </dl>
+      <p class="mt-4 text-xs text-slate-400">
+        Edita estos datos desde el listado de portales.
+      </p>
+    </Card>
+
+    <Card title="Claves de API" class="lg:col-span-2">
+      <ApiKeysPanel client:load portalId={portal.id} initial={keysDto} />
+    </Card>
+  </div>
+</AdminLayout>

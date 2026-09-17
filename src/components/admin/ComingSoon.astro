@@ -1,0 +1,16 @@
+---
+import Card from '@/components/ui/Card.astro';
+import EmptyState from '@/components/ui/EmptyState.astro';
+
+interface Props {
+  phase: string;
+}
+const { phase } = Astro.props;
+---
+
+<Card>
+  <EmptyState
+    title="Módulo en construcción"
+    description={`Este módulo se desarrolla en la ${phase}. La navegación, el layout y los permisos ya funcionan.`}
+  />
+</Card>

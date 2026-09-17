@@ -1,0 +1,16 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import MediaLibrary from '@/components/multimedia/MediaLibrary.tsx';
+import { requireResource } from '@/lib/auth/session';
+
+export const prerender = false;
+await requireResource(Astro, 'multimedia');
+---
+
+<AdminLayout title="Multimedia">
+  <p class="mb-4 text-sm text-slate-500">
+    Biblioteca central de archivos. Se validan el tipo real (firma binaria), el tamaño
+    (máx. 50 MB) y se generan nombres únicos. Las imágenes obtienen una miniatura.
+  </p>
+  <MediaLibrary client:load />
+</AdminLayout>

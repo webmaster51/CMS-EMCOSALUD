@@ -1,0 +1,36 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import BlogTable from '@/components/blog/BlogTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listBlogPaged } from '@/server/repositories/blogRepository';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { blogListSchema } from '@/lib/validations/blog';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { BlogPostDTO } from '@/lib/dto/blog';
+
+export const prerender = false;
+await requireResource(Astro, 'blog');
+
+const portalsAll = await listPortals();
+const selectedSlug = getSelectedPortalSlug(Astro);
+const selectedPortal = selectedSlug
+  ? portalsAll.find((p) => p.slug === selectedSlug)
+  : undefined;
+
+const params = blogListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(selectedPortal ? { portalId: selectedPortal.id } : {}),
+});
+const initial: PagedDTO<BlogPostDTO> = await listBlogPaged(params);
+const portalOptions = portalsAll.map((p) => ({ id: p.id, name: p.name }));
+---
+
+<AdminLayout title="Blog">
+  <p class="mb-4 text-sm text-slate-500">
+    Un mismo artículo puede mostrarse en varios portales con <strong>General</strong> o en
+    <strong>Todos los portales</strong>, sin duplicarlo. Los artículos <strong>programados</strong>
+    se publican solos al llegar su fecha.
+  </p>
+  <BlogTable client:load initial={initial} portals={portalOptions} />
+</AdminLayout>

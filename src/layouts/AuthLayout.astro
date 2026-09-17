@@ -1,0 +1,33 @@
+---
+import BaseHead from './BaseHead.astro';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <BaseHead title={title} />
+  </head>
+  <body class="min-h-screen grid place-items-center bg-brand-950 px-4 py-8">
+    <main class="w-full max-w-sm flex flex-col items-center justify-center text-center">
+      <!-- Logo en lugar de texto -->
+      <div class="mb-6 flex justify-center">
+        <!-- Si prefieres usar una imagen tag directa: -->
+        <img src="/src/assets/emcosaludGE.png" alt="Emcosalud Grupo Empresarial" class="h-50 w-80 mx-auto" />
+      </div>
+
+      <!-- Tarjeta del Formulario / Contenido -->
+      <div class="card w-full p-6 text-left shadow-xl">
+        <slot />
+      </div>
+
+      <p class="mt-6 text-center text-xs text-brand-300">
+        CMS institucional · Acceso restringido
+      </p>
+    </main>
+  </body>
+</html>

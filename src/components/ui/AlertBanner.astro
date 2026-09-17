@@ -1,0 +1,18 @@
+---
+interface Props {
+  tone?: 'info' | 'warning' | 'danger' | 'success';
+  title?: string;
+}
+const { tone = 'info', title } = Astro.props;
+const toneClass = {
+  info: 'bg-info-bg text-info',
+  warning: 'bg-warning-bg text-warning',
+  danger: 'bg-danger-bg text-danger',
+  success: 'bg-success-bg text-success',
+}[tone];
+---
+
+<div class:list={['rounded-lg px-4 py-3 text-sm', toneClass]}>
+  {title && <p class="font-medium">{title}</p>}
+  <slot />
+</div>

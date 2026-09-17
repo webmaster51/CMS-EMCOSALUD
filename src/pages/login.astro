@@ -1,0 +1,22 @@
+---
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import LoginForm from '@/components/auth/LoginForm.tsx';
+import { safeNextPath } from '@/lib/auth/redirect';
+
+export const prerender = false;
+
+if (Astro.locals.user) return Astro.redirect('/admin');
+
+const next = safeNextPath(Astro.url.searchParams.get('next'));
+
+const reason = Astro.url.searchParams.get('reason');
+const notices: Record<string, string> = {
+  expired: 'Tu sesión expiró. Inicia sesión de nuevo.',
+  loggedout: 'Cerraste sesión correctamente.',
+};
+const notice = reason ? (notices[reason] ?? null) : null;
+---
+
+<AuthLayout title="Iniciar sesión">
+  <LoginForm client:load next={next} notice={notice} />
+</AuthLayout>

@@ -1,0 +1,23 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import UsersTable from '@/components/usuarios/UsersTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listUsersPaged } from '@/server/repositories/userRepository';
+import { userListSchema } from '@/lib/validations/user';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { UserDTO } from '@/lib/dto/user';
+
+export const prerender = false;
+const me = await requireResource(Astro, 'usuarios');
+
+const params = userListSchema.parse(Object.fromEntries(Astro.url.searchParams));
+const initial: PagedDTO<UserDTO> = await listUsersPaged(params);
+---
+
+<AdminLayout title="Usuarios">
+  <p class="mb-4 text-sm text-slate-500">
+    Solo el superadministrador gestiona usuarios. Los <strong>editores</strong> pueden
+    administrar todos los contenidos, multimedia, certificados y popups.
+  </p>
+  <UsersTable client:load initial={initial} currentUserId={me.id} />
+</AdminLayout>

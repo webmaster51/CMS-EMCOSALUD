@@ -1,0 +1,35 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import TrainingTable from '@/components/capacitaciones/TrainingTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listTrainingPaged } from '@/server/repositories/trainingRepository';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { trainingListSchema } from '@/lib/validations/training';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { TrainingDTO } from '@/lib/dto/training';
+
+export const prerender = false;
+await requireResource(Astro, 'capacitaciones');
+
+const portalsAll = await listPortals();
+const selectedSlug = getSelectedPortalSlug(Astro);
+const selectedPortal = selectedSlug
+  ? portalsAll.find((p) => p.slug === selectedSlug)
+  : undefined;
+
+const params = trainingListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(selectedPortal ? { portalId: selectedPortal.id } : {}),
+});
+const initial: PagedDTO<TrainingDTO> = await listTrainingPaged(params);
+const portalOptions = portalsAll.map((p) => ({ id: p.id, name: p.name }));
+---
+
+<AdminLayout title="Capacitaciones">
+  <p class="mb-4 text-sm text-slate-500">
+    Material de capacitación (documentos, presentaciones, hojas de cálculo, ZIP, imágenes o
+    video). Distribución multiportal con <strong>General</strong> o <strong>Todos los portales</strong>.
+  </p>
+  <TrainingTable client:load initial={initial} portals={portalOptions} />
+</AdminLayout>

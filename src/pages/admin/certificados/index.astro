@@ -1,0 +1,40 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import CertificatesTable from '@/components/certificados/CertificatesTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listCertificatesPaged, listPatterns } from '@/server/repositories/certificateRepository';
+import { listCompanies } from '@/server/repositories/companyRepository';
+import { certificateListSchema } from '@/lib/validations/certificate';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { CertificateDTO } from '@/lib/dto/certificate';
+
+export const prerender = false;
+await requireResource(Astro, 'certificados');
+
+const companies = await listCompanies();
+const patterns = await listPatterns();
+
+const empresaParam = Astro.url.searchParams.get('empresa');
+const initialCompanyId = empresaParam ? Number(empresaParam) : undefined;
+
+const params = certificateListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(initialCompanyId ? { companyId: initialCompanyId } : {}),
+});
+const initial: PagedDTO<CertificateDTO> = await listCertificatesPaged(params);
+const companyOpts = companies.map((c) => ({ id: c.id, name: c.name }));
+---
+
+<AdminLayout title="Certificados de retenciones">
+  <p class="mb-4 text-sm text-slate-500">
+    Cada certificado se asocia a una <strong>empresa</strong> y un <strong>año gravable</strong>.
+    Usa <strong>Carga masiva</strong> para subir cientos o miles de PDF, un ZIP o una planilla.
+  </p>
+  <CertificatesTable
+    client:load
+    initial={initial}
+    companies={companyOpts}
+    patterns={patterns}
+    initialCompanyId={initialCompanyId}
+  />
+</AdminLayout>

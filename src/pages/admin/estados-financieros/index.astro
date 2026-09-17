@@ -1,0 +1,44 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import FinancialStatementsTable from '@/components/estados-financieros/FinancialStatementsTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listPaged } from '@/server/repositories/financialStatementRepository';
+import { listCompanies } from '@/server/repositories/companyRepository';
+import { listPortals } from '@/server/repositories/portalRepository';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import { financialStatementListSchema } from '@/lib/validations/financialStatement';
+import type { PagedDTO } from '@/lib/dto/portal';
+import type { FinancialStatementDTO } from '@/lib/dto/financialStatement';
+
+export const prerender = false;
+await requireResource(Astro, 'estados-financieros');
+
+const companies = await listCompanies();
+const portalsAll = await listPortals();
+const selectedSlug = getSelectedPortalSlug(Astro);
+const selectedPortal = selectedSlug
+  ? portalsAll.find((p) => p.slug === selectedSlug)
+  : undefined;
+
+const params = financialStatementListSchema.parse({
+  ...Object.fromEntries(Astro.url.searchParams),
+  ...(selectedPortal ? { portalId: selectedPortal.id } : {}),
+});
+const initial: PagedDTO<FinancialStatementDTO> = await listPaged(params);
+const companyOpts = companies.map((c) => ({ id: c.id, name: c.name }));
+const portalOptions = portalsAll.map((p) => ({ id: p.id, name: p.name }));
+---
+
+<AdminLayout title="Estados financieros">
+  <p class="mb-4 text-sm text-slate-500">
+    Cada empresa publica sus <strong>estados financieros una vez al año</strong>. Elige la empresa y
+    el año, añade los documentos (situación financiera, resultados, notas, dictamen…) y selecciona en
+    qué portales se muestran.
+  </p>
+  <FinancialStatementsTable
+    client:load
+    initial={initial}
+    companies={companyOpts}
+    portals={portalOptions}
+  />
+</AdminLayout>

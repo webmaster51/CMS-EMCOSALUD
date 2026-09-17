@@ -1,0 +1,183 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import Card from '@/components/ui/Card.astro';
+import StatCard from '@/components/ui/StatCard.astro';
+import EmptyState from '@/components/ui/EmptyState.astro';
+import AlertBanner from '@/components/ui/AlertBanner.astro';
+import { Badge } from '@/components/ui/Badge.tsx';
+import { requireUser } from '@/lib/auth/session';
+import { getSelectedPortalSlug } from '@/lib/portal-context';
+import {
+  getDashboard,
+  getRecentActivity,
+  type GlobalStats,
+  type PerPortalRow,
+  type ActivityRow,
+} from '@/server/services/dashboardService';
+
+export const prerender = false;
+await requireUser(Astro);
+
+const portalSlug = getSelectedPortalSlug(Astro);
+const denied = Astro.url.searchParams.get('denied') === '1';
+
+let stats: GlobalStats | null = null;
+let perPortal: PerPortalRow[] = [];
+let activity: ActivityRow[] = [];
+let dbError = false;
+
+try {
+  const [dash, recent] = await Promise.all([
+    getDashboard(portalSlug),
+    getRecentActivity(8),
+  ]);
+  stats = dash.global;
+  perPortal = dash.perPortal;
+  activity = recent;
+} catch {
+  dbError = true;
+}
+
+const scoped = stats?.portalName ?? null;
+
+const rtf = new Intl.DateTimeFormat('es-CO', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'America/Bogota',
+});
+---
+
+<AdminLayout title="Dashboard">
+  {
+    denied && (
+      <div class="mb-6">
+        <AlertBanner tone="warning" title="Acceso restringido">
+          No tienes permiso para ver esa sección con tu rol.
+        </AlertBanner>
+      </div>
+    )
+  }
+  {
+    dbError ? (
+      <Card>
+        <EmptyState
+          title="No se pudo conectar con la base de datos"
+          description="Verifica que PostgreSQL esté en ejecución y que DATABASE_URL sea correcta. Luego ejecuta `npm run db:migrate` y `npm run seed`."
+        />
+      </Card>
+    ) : (
+      stats && (
+        <div class="space-y-6">
+          {scoped && (
+            <p class="text-sm text-slate-600">
+              Mostrando contenidos visibles en <strong>{scoped}</strong>. Empresas,
+              certificados y usuarios se cuentan de forma global.
+            </p>
+          )}
+
+          <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <StatCard label="Portales" value={stats.portales} href="/admin/portales" />
+            <StatCard label="Boletines" value={stats.boletines} href="/admin/boletines" />
+            <StatCard
+              label="Publicaciones"
+              value={stats.publicaciones}
+              href="/admin/publicaciones"
+            />
+            <StatCard label="Artículos" value={stats.blog} href="/admin/blog" />
+            <StatCard
+              label="Capacitaciones"
+              value={stats.capacitaciones}
+              href="/admin/capacitaciones"
+            />
+            <StatCard
+              label="Certificados"
+              value={stats.certificados}
+              href="/admin/certificados"
+              accent="accent"
+            />
+            <StatCard
+              label="Estados financieros"
+              value={stats.estadosFinancieros}
+              href="/admin/estados-financieros"
+              accent="accent"
+            />
+            <StatCard
+              label="Empresas"
+              value={stats.empresas}
+              href="/admin/empresas"
+              accent="accent"
+            />
+            <StatCard label="Banners" value={stats.banners} href="/admin/banners" />
+            <StatCard label="Popups" value={stats.popups} href="/admin/popups" />
+            <StatCard label="Usuarios" value={stats.usuarios} href="/admin/usuarios" />
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-3">
+            <Card title="Estadísticas por portal" class="lg:col-span-2" bodyClass="px-0 py-0">
+              {perPortal.length === 0 ? (
+                <div class="p-5">
+                  <EmptyState title="Aún no hay portales" description="Crea el primer portal para empezar." />
+                </div>
+              ) : (
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
+                        <th class="px-5 py-2.5 font-medium">Portal</th>
+                        <th class="px-3 py-2.5 font-medium">Estado</th>
+                        <th class="px-3 py-2.5 text-right font-medium">Blog</th>
+                        <th class="px-3 py-2.5 text-right font-medium">Bolet.</th>
+                        <th class="px-3 py-2.5 text-right font-medium">Public.</th>
+                        <th class="px-3 py-2.5 text-right font-medium">Capac.</th>
+                        <th class="px-3 py-2.5 text-right font-medium">Banners</th>
+                        <th class="px-5 py-2.5 text-right font-medium">Popups</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {perPortal.map((p) => (
+                        <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/60">
+                          <td class="px-5 py-2.5 font-medium text-slate-700">{p.name}</td>
+                          <td class="px-3 py-2.5">
+                            <Badge tone={p.status === 'active' ? 'success' : 'neutral'}>
+                              {p.status === 'active' ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </td>
+                          <td class="px-3 py-2.5 text-right tabular-nums">{p.blog}</td>
+                          <td class="px-3 py-2.5 text-right tabular-nums">{p.boletines}</td>
+                          <td class="px-3 py-2.5 text-right tabular-nums">{p.publicaciones}</td>
+                          <td class="px-3 py-2.5 text-right tabular-nums">{p.capacitaciones}</td>
+                          <td class="px-3 py-2.5 text-right tabular-nums">{p.banners}</td>
+                          <td class="px-5 py-2.5 text-right tabular-nums">{p.popups}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+
+            <Card title="Actividad reciente">
+              {activity.length === 0 ? (
+                <EmptyState
+                  title="Sin actividad todavía"
+                  description="Las acciones del equipo aparecerán aquí."
+                />
+              ) : (
+                <ul class="space-y-3">
+                  {activity.map((a) => (
+                    <li class="text-sm">
+                      <p class="text-slate-700">{a.summary}</p>
+                      <p class="text-xs text-slate-400">
+                        {a.userName ?? 'Sistema'} · {rtf.format(a.createdAt)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+        </div>
+      )
+    )
+  }
+</AdminLayout>

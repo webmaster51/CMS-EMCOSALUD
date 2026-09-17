@@ -1,0 +1,39 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { SettingsPanel } from '@/components/configuracion/SettingsPanel.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { getAppSettings } from '@/server/repositories/settingsRepository';
+import { getEnv } from '@/lib/env';
+import { count } from 'drizzle-orm';
+import { db } from '@/lib/db/client';
+import { portals, users } from '@/lib/db/schema';
+
+export const prerender = false;
+await requireResource(Astro, 'configuracion');
+
+const env = getEnv();
+const settings = await getAppSettings();
+const [userCount] = await db.select({ n: count() }).from(users);
+const portalRows = await db
+  .select({ name: portals.name, status: portals.status, hook: portals.deployHookUrl })
+  .from(portals);
+
+const info = {
+  appUrl: env.APP_URL,
+  timezone: env.APP_TIMEZONE,
+  dbDriver: env.DB_DRIVER,
+  storageDriver: env.STORAGE_DRIVER,
+  nodeEnv: env.NODE_ENV,
+  users: userCount?.n ?? 0,
+  maxFileSizeMb: Math.round(env.MAX_FILE_SIZE / 1024 / 1024),
+  portals: portalRows.map((p) => ({
+    name: p.name,
+    status: p.status,
+    deployHook: Boolean(p.hook),
+  })),
+};
+---
+
+<AdminLayout title="Configuración">
+  <SettingsPanel client:load settings={settings} info={info} />
+</AdminLayout>

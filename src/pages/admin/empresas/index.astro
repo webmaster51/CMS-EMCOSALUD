@@ -1,0 +1,40 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import CompaniesTable from '@/components/empresas/CompaniesTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listCompaniesPaged } from '@/server/repositories/companyRepository';
+import { paginationSchema } from '@/lib/validations/common';
+import type { CompanyDTO } from '@/lib/dto/company';
+import type { PagedDTO } from '@/lib/dto/portal';
+
+export const prerender = false;
+await requireResource(Astro, 'empresas');
+
+const params = paginationSchema.parse(Object.fromEntries(Astro.url.searchParams));
+const paged = await listCompaniesPaged(params);
+
+const initial: PagedDTO<CompanyDTO> = {
+  meta: paged.meta,
+  data: paged.data.map((c) => ({
+    id: c.id,
+    name: c.name,
+    shortName: c.shortName,
+    taxId: c.taxId,
+    description: c.description,
+    status: c.status,
+    logoMediaId: c.logoMediaId,
+    logoUrl: c.logoUrl,
+    certificateCount: c.certificateCount,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+  })),
+};
+---
+
+<AdminLayout title="Empresas">
+  <p class="mb-4 text-sm text-slate-500">
+    Las empresas clasifican los <strong>certificados de retenciones</strong>. No forman parte
+    del sistema multiportal.
+  </p>
+  <CompaniesTable client:load initial={initial} />
+</AdminLayout>

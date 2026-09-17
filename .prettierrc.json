@@ -1,0 +1,8 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "printWidth": 92,
+  "trailingComma": "all",
+  "plugins": ["prettier-plugin-astro"],
+  "overrides": [{ "files": "*.astro", "options": { "parser": "astro" } }]
+}

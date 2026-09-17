@@ -1,0 +1,31 @@
+# build
+dist/
+.astro/
+.output/
+
+# deps
+node_modules/
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# tests
+coverage/
+playwright-report/
+test-results/
+
+# data (docker volumes locales)
+.data/

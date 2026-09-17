@@ -1,0 +1,42 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import PortalsTable from '@/components/portales/PortalsTable.tsx';
+import { requireResource } from '@/lib/auth/session';
+import { listPortalsPaged } from '@/server/repositories/portalRepository';
+import { paginationSchema } from '@/lib/validations/common';
+import type { PagedDTO, PortalDTO } from '@/lib/dto/portal';
+
+export const prerender = false;
+await requireResource(Astro, 'portales');
+
+const params = paginationSchema.parse(Object.fromEntries(Astro.url.searchParams));
+const paged = await listPortalsPaged(params);
+
+const initial: PagedDTO<PortalDTO> = {
+  meta: paged.meta,
+  data: paged.data.map((p) => ({
+    id: p.id,
+    name: p.name,
+    shortName: p.shortName,
+    slug: p.slug,
+    url: p.url,
+    description: p.description,
+    status: p.status,
+    deployHookUrl: p.deployHookUrl,
+    logoMediaId: p.logoMediaId,
+    logoUrl: p.logoUrl,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+    apiKeyCount: p.apiKeyCount,
+  })),
+};
+---
+
+<AdminLayout title="Portales">
+  <p class="mb-4 text-sm text-slate-500">
+    Entidad central del sistema multiportal. Cada portal se identifica por su <code
+      class="rounded bg-slate-100 px-1 py-0.5 text-xs">slug</code
+    > en la API. El logo se asignará desde Multimedia.
+  </p>
+  <PortalsTable client:load initial={initial} />
+</AdminLayout>
