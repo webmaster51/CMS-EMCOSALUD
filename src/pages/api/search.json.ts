@@ -7,7 +7,7 @@ export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const documento = url.searchParams.get('doc') || '';
   const anio = url.searchParams.get('year') || '';
-  const companyId = url.searchParams.get('company') || '1'; // <-- Recibimos el ID de la empresa
+  const companyId = url.searchParams.get('portalId') || url.searchParams.get('company') || '1'; // <-- Recibimos el ID de la empresa
 
   if (!documento) {
     return new Response(JSON.stringify({ error: "Falta el número de documento" }), {
