@@ -59,6 +59,8 @@ export function UserForm({ onCancel, onSubmit }: Props) {
       <SelectField label="Rol" error={errors.role?.message} {...register('role')}>
         <option value="editor">Editor</option>
         <option value="superadmin">Superadministrador</option>
+        <option value="document_manager">Gestor de Documentos</option>
+        <option value="content_manager">Gestor de Contenido</option>
       </SelectField>
       <div className="flex justify-end gap-2 pt-1">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>

@@ -37,7 +37,12 @@ import { isNull } from 'drizzle-orm';
  * 1. ENUMS
  * ──────────────────────────────────────────────────────────── */
 
-export const userRole = pgEnum('user_role', ['superadmin', 'editor']);
+export const userRole = pgEnum('user_role', [
+  'superadmin', 
+  'editor', 
+  'document_manager', 
+  'content_manager'
+]);
 export const userStatus = pgEnum('user_status', ['active', 'suspended']);
 export const entityStatus = pgEnum('entity_status', ['active', 'inactive']);
 

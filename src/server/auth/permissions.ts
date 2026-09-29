@@ -1,9 +1,9 @@
 /**
- * Matriz de permisos rol × recurso × acción (plan §10).
- * Dos roles fijos: `superadmin` (todo) y `editor` (contenidos + multimedia).
+ * Matriz de permisos rol × recurso × acción.
+ * Roles: `superadmin`, `editor`, `document_manager`, `content_manager`.
  * No vive en base de datos: es política de la aplicación.
  */
-export type Role = 'superadmin' | 'editor';
+export type Role = 'superadmin' | 'editor' | 'document_manager' | 'content_manager';
 
 export const RESOURCES = [
   'dashboard',
@@ -49,12 +49,44 @@ const EDITOR_CONTENT: ReadonlySet<Resource> = new Set([
   'popups',
 ]);
 
+/** Recursos específicos para el Gestor de Contenido (Content Manager). */
+const CONTENT_MANAGER_RESOURCES: ReadonlySet<Resource> = new Set([
+  'dashboard',
+  'blog',
+  'boletines',
+  'publicaciones',
+  'multimedia',
+  'banners',
+  'popups',
+  'capacitaciones',
+]);
+
+/** Recursos específicos para el Gestor de Documentos (Document Manager). */
+const DOCUMENT_MANAGER_RESOURCES: ReadonlySet<Resource> = new Set([
+  'dashboard',
+  'certificados',
+  'estados-financieros',
+  'multimedia',
+]);
+
 export function can(role: Role, resource: Resource, _action: Action = 'view'): boolean {
   if (role === 'superadmin') return true;
+
   if (role === 'editor') {
     if (SUPERADMIN_ONLY.has(resource)) return false;
     return EDITOR_CONTENT.has(resource);
   }
+
+  if (role === 'content_manager') {
+    if (SUPERADMIN_ONLY.has(resource)) return false;
+    return CONTENT_MANAGER_RESOURCES.has(resource);
+  }
+
+  if (role === 'document_manager') {
+    if (SUPERADMIN_ONLY.has(resource)) return false;
+    return DOCUMENT_MANAGER_RESOURCES.has(resource);
+  }
+
   return false;
 }
 

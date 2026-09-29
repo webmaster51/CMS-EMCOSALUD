@@ -15,6 +15,13 @@
       "when": 1789570537268,
       "tag": "0001_tearful_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790688776797,
+      "tag": "0002_sloppy_bucky",
+      "breakpoints": true
     }
   ]
 }

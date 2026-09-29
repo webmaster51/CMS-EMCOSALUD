@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { paginationSchema } from './common';
 
-export const userRoleSchema = z.enum(['superadmin', 'editor']);
+// 1. Añade los nuevos roles al enum (puedes usar los identificadores en inglés o español según prefieras)
+export const userRoleSchema = z.enum([
+  'superadmin', 
+  'editor', 
+  'document_manager', // o 'gestor_documentos'
+  'content_manager'   // o 'gestor_contenido'
+]);
 
 export const userCreateSchema = z.object({
   name: z.string().trim().min(2, 'Mínimo 2 caracteres').max(120),

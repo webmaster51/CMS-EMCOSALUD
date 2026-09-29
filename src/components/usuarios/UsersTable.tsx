@@ -21,7 +21,16 @@ interface Props {
 const fmt = (iso: string | null) =>
   iso ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso)) : 'Nunca';
 
-const ROLE_LABEL = { superadmin: 'Superadmin', editor: 'Editor' } as const;
+// 1. Añadimos las etiquetas para los nuevos roles
+const ROLE_LABEL = {
+  superadmin: 'Superadmin',
+  editor: 'Editor',
+  document_manager: 'Gestor de Documentos',
+  content_manager: 'Gestor de Contenido',
+} as const;
+
+// Definimos el tipo de rol basado en las claves del objeto anterior
+type UserRoleType = keyof typeof ROLE_LABEL;
 
 export default function UsersTable({ initial, currentUserId }: Props) {
   const [paged, setPaged] = useState(initial);
@@ -31,7 +40,9 @@ export default function UsersTable({ initial, currentUserId }: Props) {
   const [resetting, setResetting] = useState<UserDTO | null>(null);
   const [deleting, setDeleting] = useState<UserDTO | null>(null);
   const [editName, setEditName] = useState('');
-  const [editRole, setEditRole] = useState<'superadmin' | 'editor'>('editor');
+  
+  // 2. Actualizamos el tipo del estado editRole para aceptar los nuevos roles
+  const [editRole, setEditRole] = useState<UserRoleType>('editor');
   const [editStatus, setEditStatus] = useState<'active' | 'suspended'>('active');
   const [newPassword, setNewPassword] = useState('');
   const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -53,7 +64,7 @@ export default function UsersTable({ initial, currentUserId }: Props) {
   function openEdit(u: UserDTO) {
     setEditing(u);
     setEditName(u.name);
-    setEditRole(u.role);
+    setEditRole(u.role as UserRoleType);
     setEditStatus(u.status);
   }
 
@@ -147,7 +158,7 @@ export default function UsersTable({ initial, currentUserId }: Props) {
                   </td>
                   <td className="px-3 py-2.5">
                     <Badge tone={u.role === 'superadmin' ? 'brand' : 'neutral'}>
-                      {ROLE_LABEL[u.role]}
+                      {ROLE_LABEL[u.role as UserRoleType] || u.role}
                     </Badge>
                   </td>
                   <td className="px-3 py-2.5">
@@ -219,11 +230,14 @@ export default function UsersTable({ initial, currentUserId }: Props) {
           <SelectField
             label="Rol"
             value={editRole}
-            onChange={(e) => setEditRole(e.target.value as 'superadmin' | 'editor')}
+            onChange={(e) => setEditRole(e.target.value as UserRoleType)}
             disabled={editing?.id === currentUserId}
           >
             <option value="editor">Editor</option>
             <option value="superadmin">Superadministrador</option>
+            {/* 3. Añadimos las opciones visuales para edición */}
+            <option value="document_manager">Gestor de Documentos</option>
+            <option value="content_manager">Gestor de Contenido</option>
           </SelectField>
           <SelectField
             label="Estado"
