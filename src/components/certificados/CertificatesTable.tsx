@@ -48,7 +48,7 @@ export default function CertificatesTable({
   const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const load = useCallback(
-    async (page: number) => {
+    async (page: number = 1) => {
       const params = new URLSearchParams({ page: String(page), limit: '25' });
       if (q) params.set('document', q);
       if (companyId !== '') params.set('companyId', String(companyId));
@@ -79,6 +79,14 @@ export default function CertificatesTable({
   useEffect(() => {
     void loadYears();
   }, [loadYears]);
+
+  useEffect(() => {
+    clearTimeout(debounce.current);
+    // Cada vez que cambien los filtros (q, companyId, year, fromDate, toDate), 
+    // reiniciamos la paginación a la página 1 para evitar resultados vacíos.
+    debounce.current = setTimeout(() => void load(1), 300);
+    return () => clearTimeout(debounce.current);
+  }, [load]);
 
   useEffect(() => {
     clearTimeout(debounce.current);

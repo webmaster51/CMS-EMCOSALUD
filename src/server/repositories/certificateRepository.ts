@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, sql } from 'drizzle-orm';
+import { and, eq, gte, lte, ilike, desc, asc, count, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
 import {
   certificateFilenamePatterns,
@@ -19,6 +19,8 @@ interface ListParams extends PaginationParams {
   taxYear?: number;
   document?: string;
   status?: 'active' | 'inactive';
+  fromDate?: string; 
+  toDate?: string;   
 }
 
 function toDTO(row: {
@@ -58,6 +60,18 @@ export async function listCertificatesPaged(
     filters.push(
       sql`(${certificates.documentNumber} ILIKE ${'%' + params.q + '%'} OR ${certificates.fullName} ILIKE ${'%' + params.q + '%'})`,
     );
+
+  // ✅ NUEVO: Agregar filtros de rango de fechas
+  if (params.fromDate) {
+    filters.push(gte(certificates.createdAt, new Date(params.fromDate)));
+  }
+  if (params.toDate) {
+    // Ajustamos la hora al final del día seleccionado para incluir todos los registros de esa fecha
+    const endDate = new Date(params.toDate);
+    endDate.setHours(23, 59, 59, 999);
+    filters.push(lte(certificates.createdAt, endDate));
+  }
+
   const where = filters.length ? and(...filters) : undefined;
   const offset = (params.page - 1) * params.limit;
 

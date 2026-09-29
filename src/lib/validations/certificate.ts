@@ -40,6 +40,9 @@ export const certificateListSchema = paginationSchema.extend({
   taxYear: z.coerce.number().int().min(1990).max(2100).optional(),
   document: z.string().trim().max(32).optional(),
   status: z.enum(['active', 'inactive']).optional(),
+  
+  fromDate: z.string().optional(),
+  toDate: z.string().optional(),
 });
 
 export const bulkJobCreateSchema = z.object({
