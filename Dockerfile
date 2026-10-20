@@ -20,7 +20,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/src/lib ./src/lib
+# Copiamos todo el src por si las migraciones importan los esquemas directamente desde ahí
+COPY --from=build /app/src ./src
 COPY drizzle.config.ts ./
 
 EXPOSE 4321

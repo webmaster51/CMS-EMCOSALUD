@@ -1,4 +1,4 @@
-# CMS EMCO SALUD — CMS institucional headless y multiportal
+# CMS EMCOSALUD — CMS institucional headless y multiportal
 
 Panel administrativo central para gestionar múltiples portales (EMCOSALUD, Clínica
 Emcosalud, Escuela/FUNAM, Radio y futuros) y sus contenidos, con una API que cada sitio
