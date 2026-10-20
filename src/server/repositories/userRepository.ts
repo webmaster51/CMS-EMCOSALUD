@@ -70,7 +70,7 @@ export async function emailTaken(email: string): Promise<boolean> {
 
 export async function updateUserFields(
   id: string,
-  patch: { name?: string; role?: 'superadmin' | 'editor'; status?: 'active' | 'suspended' },
+  patch: { name?: string; role?: 'superadmin' | 'editor' |'document_manager' | 'content_manager'; status?: 'active' | 'suspended' },
 ): Promise<UserDTO | undefined> {
   const [row] = await db
     .update(users)

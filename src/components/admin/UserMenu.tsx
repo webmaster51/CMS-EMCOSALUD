@@ -1,6 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LogOut, Settings, UserRound } from 'lucide-react';
 import { signOut } from '@/lib/auth/client';
+import { document_manager } from '@/lib/auth/access';
 
 interface Props {
   name: string;
@@ -11,6 +12,8 @@ interface Props {
 const ROLE_LABEL: Record<string, string> = {
   superadmin: 'Superadministrador',
   editor: 'Editor',
+  content_manager: 'Gestor de Cotenido',
+  document_manager: 'Gestor de Documentos'
 };
 
 export default function UserMenu({ name, email, role }: Props) {

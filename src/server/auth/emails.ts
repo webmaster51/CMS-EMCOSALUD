@@ -17,7 +17,7 @@ const wrap = (title: string, body: string): string => `
           </td></tr>
         </table>
         <p style="color:#94a3b8;font-size:12px;margin-top:16px">
-          EMCO SALUD — Grupo Empresarial. Si no solicitaste esto, ignora este correo.
+          EMCOSALUD — Grupo Empresarial. Si no solicitaste esto, ignora este correo.
         </p>
       </td></tr>
     </table>
@@ -38,7 +38,7 @@ export function resetPasswordEmail(to: string, url: string): MailMessage {
     <p style="margin:0;color:#94a3b8;font-size:12px;word-break:break-all">${url}</p>`;
   return {
     to,
-    subject: 'Restablece tu contraseña — CMS EMCO SALUD',
+    subject: 'Restablece tu contraseña — CMS EMCOSALUD',
     html: wrap('Restablecer contraseña', body),
     text: `Restablece tu contraseña (expira en 1 hora): ${url}`,
   };

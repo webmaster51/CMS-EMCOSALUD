@@ -25,5 +25,7 @@ export const superadmin = ac.newRole({
 
 /** Editor: sin acceso a la gestión de usuarios de Better Auth. */
 export const editor = ac.newRole({});
+export const document_manager = ac.newRole({});
+export const content_manager = ac.newRole({});
 
-export const roles = { superadmin, editor };
+export const roles = { superadmin, editor, document_manager, content_manager };

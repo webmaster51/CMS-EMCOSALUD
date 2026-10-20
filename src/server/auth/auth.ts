@@ -21,7 +21,7 @@ const env = getEnv();
 const isProd = env.NODE_ENV === 'production';
 
 export const auth = betterAuth({
-  appName: 'CMS EMCO SALUD',
+  appName: 'CMS EMCOSALUD',
   // En producción se fija; en desarrollo se infiere de la petición para
   // tolerar que Astro use un puerto distinto al 4321.
   ...(isProd ? { baseURL: env.APP_URL } : {}),
