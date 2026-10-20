@@ -3,7 +3,7 @@ FROM node:22-slim AS build
 WORKDIR /app
 ENV NODE_ENV=development
 COPY package*.json ./
-RUN npm ci
+RUN npm install --include=dev --ignore-scripts
 COPY . .
 RUN npm run build
 
@@ -15,7 +15,8 @@ ENV HOST=0.0.0.0
 ENV PORT=4321
 
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
+COPY --from=build /app/public ./public
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle

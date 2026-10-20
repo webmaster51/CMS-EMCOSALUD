@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. Base de Datos PostgreSQL
   postgres:
@@ -19,9 +17,9 @@ services:
     networks:
       - cms-network
 
-  # 2. Almacenamiento MinIO
+  # 2. Almacenamiento S3 Compatible (Alternativa directa a Minio)
   minio:
-    image: minio/minio:latest
+    image: ghcr.io/midagedev/ss33:0.4
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -32,9 +30,9 @@ services:
     networks:
       - cms-network
 
-  # Crea el bucket al arrancar
+  # Inicializador de buckets compatible
   minio-init:
-    image: minio/mc:latest
+    image: ghcr.io/midagedev/ss33:0.4
     depends_on:
       - minio
     entrypoint: >
