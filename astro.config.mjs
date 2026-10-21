@@ -22,22 +22,5 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  security: {
-    checkOrigin: true,
-    csp: {
-      algorithm: 'SHA-256',
-      directives: [
-        "default-src 'self'",
-        "img-src 'self' data: blob: https:",
-        "font-src 'self' data:",
-        "connect-src 'self'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "frame-ancestors 'none'",
-        "form-action 'self'",
-      ],
-      styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
-      scriptDirective: { resources: ["'self'", "'unsafe-inline'"] },
-    },
-  },
+  
 });
