@@ -16,14 +16,12 @@ ENV PORT=4321
 
 COPY package*.json ./
 RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
-COPY --from=build /app/public ./public
 
+# Copiamos solo lo estrictamente necesario para producción
+COPY --from=build /app/public ./public
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
-# Copiamos todo el src por si las migraciones importan los esquemas directamente desde ahí
-COPY --from=build /app/src ./src
-COPY drizzle.config.ts ./
 
 EXPOSE 4321
 CMD ["node", "./dist/server/entry.mjs"]
