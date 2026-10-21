@@ -23,12 +23,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   security: {
-    // El middleware valida Origin en las mutaciones; Astro añade su propia
-    // comprobación CSRF para formularios con el mismo origen.
     checkOrigin: true,
-    // CSP con hashes para los scripts de Astro (solo en el build; en `astro dev`
-    // el middleware usa una CSP más laxa). Los estilos permiten 'unsafe-inline'
-    // porque Radix/sonner escriben atributos `style=` en runtime.
     csp: {
       algorithm: 'SHA-256',
       directives: [
