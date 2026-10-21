@@ -42,7 +42,7 @@ export default defineConfig({
         "form-action 'self'",
       ],
       styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
-      scriptDirective: { strictDynamic: true },
+      scriptDirective: { resources: ["'self'", "'unsafe-inline'"] },
     },
   },
 });
