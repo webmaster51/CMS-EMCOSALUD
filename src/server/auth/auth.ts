@@ -22,14 +22,13 @@ const isProd = env.NODE_ENV === 'production';
 
 export const auth = betterAuth({
   appName: 'CMS EMCOSALUD',
-  // Fuerza directamente el valor de la URL para evitar desajustes de entorno
-  baseURL: env.APP_URL || 'https://gestion.emcosalud.com.co',
+  baseURL: 'https://gestion.emcosalud.com.co',
   secret: env.AUTH_SECRET,
   
-  // Lista de orígenes permitidos explícita e inclusiva para producción y dominio con/sin barra
+  // Lista robusta de orígenes confiables para evitar falsos positivos tras el proxy
   trustedOrigins: [
     'https://gestion.emcosalud.com.co',
-    'https://www.gestion.emcosalud.com.co',
+    'http://gestion.emcosalud.com.co',
     'http://localhost:4321',
     'http://127.0.0.1:4321',
   ],
@@ -44,7 +43,6 @@ export const auth = betterAuth({
       rateLimit: schema.rateLimits,
     },
   }),
-  // ... resto de tu configuración
 
   // Rate limiting persistente (plan §7, §30). El límite estricto para login y
   // recuperación de contraseña protege contra fuerza bruta.
