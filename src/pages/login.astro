@@ -18,5 +18,5 @@ const notice = reason ? (notices[reason] ?? null) : null;
 ---
 
 <AuthLayout title="Iniciar sesión">
-  <LoginForm client:only="react" next={next} notice={notice} />
+  <LoginForm client:load next={next} notice={notice} />
 </AuthLayout>

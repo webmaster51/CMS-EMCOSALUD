@@ -71,8 +71,10 @@ services:
         condition: service_started
     env_file: .env
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-cms}:${POSTGRES_PASSWORD:-cms_password_seguro}@postgres:5432/${POSTGRES_DB:-cms_emcosalud}
-      STORAGE_ENDPOINT: http://minio:9000
+      - DATABASE_URL=postgres://${POSTGRES_USER:-cms}:${POSTGRES_PASSWORD:-cms_password_seguro}@postgres:5432/${POSTGRES_DB:-cms_emcosalud}
+      - STORAGE_ENDPOINT=http://minio:9000
+      - APP_URL=https://gestion.emcosalud.com.co
+      - BETTER_AUTH_URL=https://gestion.emcosalud.com.co
     # Corre las migraciones y luego levanta Astro SSR
     command: sh -c "node scripts/migrate.mjs && node ./dist/server/entry.mjs"
     networks:
