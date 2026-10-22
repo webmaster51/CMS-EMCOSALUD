@@ -22,19 +22,17 @@ const isProd = env.NODE_ENV === 'production';
 
 export const auth = betterAuth({
   appName: 'CMS EMCOSALUD',
-  // En producción se fija; en desarrollo se infiere de la petición para
-  // tolerar que Astro use un puerto distinto al 4321.
-  ...(isProd ? { baseURL: env.APP_URL } : {}),
+  // Fuerza directamente el valor de la URL para evitar desajustes de entorno
+  baseURL: env.APP_URL || 'https://gestion.emcosalud.com.co',
   secret: env.AUTH_SECRET,
-  trustedOrigins: isProd
-    ? [env.APP_URL]
-    : [
-        env.APP_URL,
-        'http://localhost:4321',
-        'http://localhost:4322',
-        'http://localhost:4323',
-        'http://127.0.0.1:4321',
-      ],
+  
+  // Lista de orígenes permitidos explícita e inclusiva para producción y dominio con/sin barra
+  trustedOrigins: [
+    'https://gestion.emcosalud.com.co',
+    'https://www.gestion.emcosalud.com.co',
+    'http://localhost:4321',
+    'http://127.0.0.1:4321',
+  ],
 
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -46,6 +44,7 @@ export const auth = betterAuth({
       rateLimit: schema.rateLimits,
     },
   }),
+  // ... resto de tu configuración
 
   // Rate limiting persistente (plan §7, §30). El límite estricto para login y
   // recuperación de contraseña protege contra fuerza bruta.
