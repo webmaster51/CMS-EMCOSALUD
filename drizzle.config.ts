@@ -8,7 +8,6 @@ export default defineConfig({
   out: './drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    // Si existe DATABASE_URL la usa; si no, por defecto apunta a localhost para desarrollo local
-    url: process.env.DATABASE_URL || 'postgres://cms:cms_password_seguro@localhost:5432/cms_emcosalud',
+    url: process.env.DATABASE_URL!,
   },
 });

@@ -21,17 +21,20 @@ const env = getEnv();
 const isProd = env.NODE_ENV === 'production';
 
 export const auth = betterAuth({
-  appName: 'CMS EMCOSALUD',
-  baseURL: 'https://gestion.emcosalud.com.co',
+  appName: 'CMS EMCO SALUD',
+  // En producción se fija; en desarrollo se infiere de la petición para
+  // tolerar que Astro use un puerto distinto al 4321.
+  ...(isProd ? { baseURL: env.APP_URL } : {}),
   secret: env.AUTH_SECRET,
-  
-  // Lista robusta de orígenes confiables para evitar falsos positivos tras el proxy
-  trustedOrigins: [
-    'https://gestion.emcosalud.com.co',
-    'http://gestion.emcosalud.com.co',
-    'http://localhost:4321',
-    'http://127.0.0.1:4321',
-  ],
+  trustedOrigins: isProd
+    ? [env.APP_URL]
+    : [
+        env.APP_URL,
+        'http://localhost:4321',
+        'http://localhost:4322',
+        'http://localhost:4323',
+        'http://127.0.0.1:4321',
+      ],
 
   database: drizzleAdapter(db, {
     provider: 'pg',

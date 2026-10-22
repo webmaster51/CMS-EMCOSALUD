@@ -1,89 +1,69 @@
+# Entorno local / referencia de producción — CMS EMCO SALUD.
+# En producción, coloca Nginx + TLS por delante del servicio `app`.
 services:
-  # 1. Base de Datos PostgreSQL
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-cms}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cms_password_seguro}
-      POSTGRES_DB: ${POSTGRES_DB:-cms_emcosalud}
+      POSTGRES_USER: cms
+      POSTGRES_PASSWORD: cms
+      POSTGRES_DB: cms
+    ports:
+      - '5432:5432'
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./.data/postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-cms}']
+      test: ['CMD-SHELL', 'pg_isready -U cms']
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - cms-network
 
-  # 2. Almacenamiento S3 Compatible (Alternativa directa a Minio)
   minio:
-    image: ghcr.io/midagedev/ss33:0.4
+    image: minio/minio:latest
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:-minioadmin_password_seguro}
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
     volumes:
-      - miniodata:/data
-    networks:
-      - cms-network
+      - ./.data/minio:/data
 
-  # Inicializador de buckets compatible
+  # Crea el bucket al arrancar.
   minio-init:
-    image: ghcr.io/midagedev/ss33:0.4
+    image: minio/mc:latest
     depends_on:
       - minio
     entrypoint: >
       /bin/sh -c "
-      until mc alias set local http://minio:9000 ${STORAGE_ACCESS_KEY:-minioadmin} ${STORAGE_SECRET_KEY:-minioadmin_password_seguro}; do sleep 2; done;
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 2; done;
       mc mb -p local/cms-media || true;
       mc anonymous set download local/cms-media || true;
       "
-    networks:
-      - cms-network
 
-  # 3. Nginx Proxy Manager (Gestor de Dominios y SSL)
-  nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager
+  # Servidor de correo de desarrollo (UI en http://localhost:8025).
+  mailhog:
+    image: mailhog/mailhog:latest
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
-    volumes:
-      - ./npm/data:/data
-      - ./npm/letsencrypt:/etc/letsencrypt
-    networks:
-      - cms-network
+      - '1025:1025'
+      - '8025:8025'
 
-  # 4. Aplicación CMS en Astro SSR
   app:
     build: .
-    container_name: cms-app
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
-        condition: service_started
     env_file: .env
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-cms}:${POSTGRES_PASSWORD:-cms_password_seguro}@postgres:5432/${POSTGRES_DB:-cms_emcosalud}
-      - STORAGE_ENDPOINT=http://minio:9000
-      - APP_URL=https://gestion.emcosalud.com.co
-      - BETTER_AUTH_URL=https://gestion.emcosalud.com.co
-    # Corre las migraciones y luego levanta Astro SSR
+      DATABASE_URL: postgres://cms:cms@postgres:5432/cms
+      STORAGE_ENDPOINT: http://minio:9000
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    ports:
+      - '4321:4321'
+    # Aplica migraciones y arranca.
     command: sh -c "node scripts/migrate.mjs && node ./dist/server/entry.mjs"
-    networks:
-      - cms-network
-
-volumes:
-  pgdata:
-  miniodata:
-
-networks:
-  cms-network:
-    driver: bridge
