@@ -95,23 +95,30 @@ export function TrainingForm({ portals, defaults, submitLabel, onCancel, onSubmi
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <CategoryCombobox
-          module="training"
-          value={watch('categoryId') ?? null}
-          onChange={(id) => setValue('categoryId', id)}
-        />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Categoría ocupa 2 espacios en pantallas grandes para dar campo a los botones de creación */}
+        <div className="lg:col-span-2">
+          <CategoryCombobox
+            module="training"
+            value={watch('categoryId') ?? null}
+            onChange={(id) => setValue('categoryId', id)}
+          />
+        </div>
+
         <TextField
           type="date"
           label="Fecha"
           error={errors.publishedDate?.message}
           {...register('publishedDate')}
         />
-        <SelectField label="Estado" {...register('status')}>
-          <option value="draft">Borrador</option>
-          <option value="published">Publicado</option>
-          <option value="archived">Archivado</option>
-        </SelectField>
+
+        <div className="sm:col-span-2 lg:col-span-3">
+          <SelectField label="Estado" {...register('status')}>
+            <option value="draft">Borrador</option>
+            <option value="published">Publicado</option>
+            <option value="archived">Archivado</option>
+          </SelectField>
+        </div>
       </div>
 
       <PortalSelector

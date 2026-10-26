@@ -118,23 +118,26 @@ export function BoletinForm({ portals, defaults, submitLabel, onCancel, onSubmit
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="space-y-4">
         <CategoryCombobox
           module="boletin"
           value={watch('categoryId') ?? null}
           onChange={(id) => setValue('categoryId', id)}
         />
-        <TextField
-          type="date"
-          label="Fecha"
-          error={errors.publishedDate?.message}
-          {...register('publishedDate')}
-        />
-        <SelectField label="Estado" {...register('status')}>
-          <option value="draft">Borrador</option>
-          <option value="published">Publicado</option>
-          <option value="archived">Archivado</option>
-        </SelectField>
+        
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            type="date"
+            label="Fecha"
+            error={errors.publishedDate?.message}
+            {...register('publishedDate')}
+          />
+          <SelectField label="Estado" {...register('status')}>
+            <option value="draft">Borrador</option>
+            <option value="published">Publicado</option>
+            <option value="archived">Archivado</option>
+          </SelectField>
+        </div>
       </div>
 
       <PortalSelector

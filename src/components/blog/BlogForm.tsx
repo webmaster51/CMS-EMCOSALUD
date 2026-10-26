@@ -137,13 +137,16 @@ export function BlogForm({ portals, defaults, submitLabel, onCancel, onSubmit }:
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="space-y-4">
         <CategoryCombobox
           module="blog"
           value={watch('categoryId') ?? null}
           onChange={(id) => setValue('categoryId', id)}
         />
-        <TagsInput value={tagNames} onChange={(t) => setValue('tagNames', t)} />
+        <TagsInput 
+          value={tagNames} 
+          onChange={(t) => setValue('tagNames', t)} 
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
