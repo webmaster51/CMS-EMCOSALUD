@@ -14,7 +14,7 @@ export function UploadZone({ onUploaded, accept, compact }: Props) {
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState<{ done: number; total: number } | null>(null);
 
-  async function uploadOne(file: File) {
+  async function uploadOne(file: File): Promise<boolean> {
     const form = new FormData();
     form.append('file', file);
     const res = await fetch('/api/admin/media', { method: 'POST', body: form });
@@ -22,21 +22,31 @@ export function UploadZone({ onUploaded, accept, compact }: Props) {
     if (!res.ok) {
       const err = body as { error?: string } | null;
       toast.error(`${file.name}: ${err?.error ?? 'error al subir'}`);
-      return;
+      return false; // Retorna falso si falla
     }
     onUploaded(body as MediaDTO);
+    return true; // Retorna verdadero si es exitoso
   }
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     const list = Array.from(files);
     setBusy({ done: 0, total: list.length });
+    
+    let successCount = 0;
     for (let i = 0; i < list.length; i++) {
-      await uploadOne(list[i]!);
+      const success = await uploadOne(list[i]!);
+      if (success) {
+        successCount++;
+      }
       setBusy({ done: i + 1, total: list.length });
     }
     setBusy(null);
-    toast.success(list.length === 1 ? 'Archivo subido' : `${list.length} archivos subidos`);
+
+    // Solo muestra el mensaje de éxito si al menos un archivo se subió correctamente
+    if (successCount > 0) {
+      toast.success(successCount === 1 ? 'Archivo subido' : `${successCount} archivos subidos`);
+    }
   }
 
   return (
