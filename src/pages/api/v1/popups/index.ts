@@ -1,14 +1,16 @@
 import type { APIRoute } from 'astro';
 import { db } from '@/lib/db/client';
 import { popups, portals, popupPortals, popupPages, media } from '@/lib/db/schema';
-import { eq, and, isNull  } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 
 export const prerender = false;
 
-const MEDIA_BASE_URL = 'http://localhost:4321/media';
-
 export const ALL: APIRoute = async ({ url, request }) => {
-  // 1. OBTENEMOS EL SLUG EXCLUSIVAMENTE DE LA PETICIÓN (Sin valores quemados)
+  // Definimos la base URL aquí adentro, donde 'url' ya está disponible
+  const baseUrl = process.env.APP_URL || url.origin;
+  const MEDIA_BASE_URL = `${baseUrl}/media`;
+
+  // 1. OBTENEMOS EL SLUG EXCLUSIVAMENTE DE LA PETICIÓN
   const portalSlug = 
     request.headers.get('x-portal-slug') || 
     url.searchParams.get('portal');
@@ -24,10 +26,10 @@ export const ALL: APIRoute = async ({ url, request }) => {
   const currentPath = url.searchParams.get('path') || '/';
 
   try {
-    // 2. BUSCAMos EL PORTAL DINÁMICAMENTE EN LA BASE DE DATOS
+    // 2. BUSCAMOS EL PORTAL DINÁMICAMENTE EN LA BASE DE DATOS
     const portal = await db.query.portals.findFirst({
       where: and(
-        eq(portals.slug, portalSlug), // Busca exactamente el que mandó el portal (ej. 'sociedad-clinica-emcosalud')
+        eq(portals.slug, portalSlug),
         eq(portals.status, 'active')
       ),
     });
@@ -39,9 +41,7 @@ export const ALL: APIRoute = async ({ url, request }) => {
       );
     }
 
-    // ... el resto de tu lógica de popups y filtros ...
-
-    // 2. CONSULTAR POPUPS JUNTO CON SUS RUTAS ESPECÍFICAS DE popupPages
+    // 3. CONSULTAR POPUPS
     const activePopups = await db
       .select({
         id: popups.id,
@@ -69,7 +69,7 @@ export const ALL: APIRoute = async ({ url, request }) => {
         and(
           eq(popupPortals.portalId, portal.id),
           eq(popups.status, 'active'),
-          isNull(popups.deletedAt) // <--- ¡ESTO EVITA QUE APAREZCAN LOS BORRADOS!
+          isNull(popups.deletedAt)
         )
       );
 
@@ -77,25 +77,20 @@ export const ALL: APIRoute = async ({ url, request }) => {
 
     const data = activePopups
       .filter((popup) => {
-        // Validación de fechas
         if (popup.startsAt && new Date(popup.startsAt) > now) return false;
         if (popup.endsAt && new Date(popup.endsAt) < now) return false;
 
         const mode = popup.pageMode as string;
 
-        // Caso A: Solo en el inicio ('/')
         if (mode === 'home_only') {
           return currentPath === '/' || currentPath === '';
         }
 
-        // Caso B: En todo el sitio
         if (mode === 'all_pages' || !mode) {
           return true;
         }
 
-        // Caso C: En páginas específicas (validamos contra la tabla popupPages)
         if (mode === 'specific_pages') {
-          // Compara si la ruta actual coincide con la ruta guardada en la base de datos para este popup
           return popup.specificPath === currentPath;
         }
 
